@@ -1,0 +1,35 @@
+# tasks file for configure-k8s
+- name: disable swap
+  command: sudo swapoff -a
+
+- name: Configure DNS in /etc/hosts
+  blockinfile:
+    path: /etc/hosts
+    block: |
+      172.16.46.194 vm01
+      172.16.46.195 vm02
+      172.16.46.196 vm03
+    marker: "# {mark} ANSIBLE MANAGED BLOCK"
+
+- name: Create /etc/sysctl.d/k8s.conf
+  ansible.builtin.file:
+    path: /etc/sysctl.d/k8s.conf
+    state: touch
+    mode: u+rw,g-wx,o-rwx
+
+- name: bridged traffic
+  blockinfile:
+    path: /etc/sysctl.d/k8s.conf
+    block: |
+      net.bridge.bridge-nf-call-iptables  = 1
+      net.bridge.bridge-nf-call-ip6tables = 1
+      net.ipv4.ip_forward                 = 1
+    marker: "# {mark} ANSIBLE MANAGED BLOCK"
+
+- name: Instaling ca-certificates & curl
+  apt:
+    pkg:
+    - ca-certificates
+    - curl
+    state: latest
+    update_cache: true

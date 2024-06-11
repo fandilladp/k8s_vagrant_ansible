@@ -1,0 +1,7 @@
+---
+ - name: Copy SSH key to vagrant
+   authorized_key:
+    user: vagrant
+    state: present
+    key: "{{ lookup('file', '/Users/funboydev/.ssh/vagrant_ansible_01.pub') }}"
+...

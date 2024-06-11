@@ -1,0 +1,40 @@
+- name:  apt-update
+  command: sudo apt-get update
+
+- name:  Add keyrings
+  command: sudo install -m 0755 -d /etc/apt/keyrings
+
+- name:  Add Docker's official GPG key
+  command: sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+
+- name:  Add permission /etc/apt/keyrings/docker.asc
+  command: sudo chmod a+r /etc/apt/keyrings/docker.asc
+
+- name:  Add the repository to Apt sources
+  command: sudo sh -c 'echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo "$VERSION_CODENAME") stable" > /etc/apt/sources.list.d/docker.list'
+
+- name:  apt-update
+  command: sudo apt-get update
+
+- name: Installing docker
+  apt:
+    name:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+      - docker-buildx-plugin
+      - docker-compose-plugin
+    state: latest
+    update_cache: yes
+
+- name: usermod docker
+  command: sudo usermod -aG docker $USER
+
+# - name: newgrp docker
+#   command: sudo newgrp docker
+
+- name: activate CRI
+  command: sudo sed -i 's/disabled_plugins = \[\"cri\"\]/\#disabled_plugins \= \[\"cri\"\]/g' /etc/containerd/config.toml
+
+- name: restart containerd
+  command: sudo systemctl restart containerd
